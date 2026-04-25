@@ -80,6 +80,56 @@ export function registerAgentRoutes(app: Express): void {
     });
   });
 
+  // Diagnostico de Telegram. Envia un mensaje de prueba directo y devuelve el resultado crudo de la API.
+  // Sirve para detectar: chat_id invalido, token revocado, problema de Markdown, etc.
+  app.post("/api/agent/diag/telegram", requireAgentAuth, async (_req: Request, res: Response) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_OWNER_CHAT_ID;
+    const tokenPresent = !!token;
+    const chatIdPresent = !!chatId;
+    const chatIdMasked = chatId ? chatId.slice(0, 4) + "***" + chatId.slice(-2) : null;
+
+    if (!tokenPresent || !chatIdPresent) {
+      res.status(200).json({
+        success: false,
+        reason: "missing_env_vars",
+        tokenPresent,
+        chatIdPresent,
+        chatIdMasked,
+      });
+      return;
+    }
+
+    try {
+      const apiRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "Test de diagnostico desde agente-core. Si ves esto, Telegram funciona OK.",
+        }),
+      });
+      const data: unknown = await apiRes.json();
+      res.json({
+        success: apiRes.ok,
+        httpStatus: apiRes.status,
+        tokenPresent,
+        chatIdPresent,
+        chatIdMasked,
+        telegramApiResponse: data,
+      });
+    } catch (err) {
+      res.status(200).json({
+        success: false,
+        reason: "fetch_threw",
+        tokenPresent,
+        chatIdPresent,
+        chatIdMasked,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  });
+
   // ===== Missions =====
 
   app.post("/api/agent/missions", requireAgentAuth, async (req: Request, res: Response) => {
