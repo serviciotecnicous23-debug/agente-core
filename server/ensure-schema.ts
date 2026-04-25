@@ -23,6 +23,19 @@ export async function ensureAgentSchema(connectionString: string): Promise<void>
       );
     `);
 
+    // Self-heal: si la tabla agent_missions existe con schema viejo, agrega columnas faltantes.
+    await sql.unsafe(`
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS title TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS created_by TEXT NOT NULL DEFAULT 'unknown';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS assigned_to TEXT;
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS progress_notes TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS metadata TEXT NOT NULL DEFAULT '{}';
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
+      ALTER TABLE agent_missions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT NOW();
+    `);
+
     await sql.unsafe(`
       CREATE INDEX IF NOT EXISTS idx_agent_missions_status ON agent_missions (status);
       CREATE INDEX IF NOT EXISTS idx_agent_missions_assigned ON agent_missions (assigned_to);
@@ -48,6 +61,24 @@ export async function ensureAgentSchema(connectionString: string): Promise<void>
       );
     `);
 
+    // Self-heal de agent_review_requests (en caso de que la tabla preexistiera con schema viejo).
+    await sql.unsafe(`
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS mission_id INTEGER;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS requested_by TEXT NOT NULL DEFAULT 'unknown';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS action_type TEXT NOT NULL DEFAULT 'custom';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS summary TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS payload TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS risk_score INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS risk_reasons TEXT NOT NULL DEFAULT '[]';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS decision TEXT NOT NULL DEFAULT 'pending';
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS decided_by TEXT;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS decided_at TIMESTAMP;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS decision_reason TEXT;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS telegram_message_id INTEGER;
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
+      ALTER TABLE agent_review_requests ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP NOT NULL DEFAULT (NOW() + INTERVAL '24 hours');
+    `);
+
     await sql.unsafe(`
       CREATE INDEX IF NOT EXISTS idx_agent_reviews_decision ON agent_review_requests (decision);
       CREATE INDEX IF NOT EXISTS idx_agent_reviews_mission ON agent_review_requests (mission_id);
@@ -63,6 +94,16 @@ export async function ensureAgentSchema(connectionString: string): Promise<void>
         details TEXT NOT NULL DEFAULT '{}',
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
+    `);
+
+    // Self-heal de agent_activity_log
+    await sql.unsafe(`
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS agent_id TEXT NOT NULL DEFAULT 'unknown';
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS action TEXT NOT NULL DEFAULT '';
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS target_type TEXT;
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS target_id INTEGER;
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS details TEXT NOT NULL DEFAULT '{}';
+      ALTER TABLE agent_activity_log ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
     `);
 
     await sql.unsafe(`
