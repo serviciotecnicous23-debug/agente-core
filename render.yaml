@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: agente-core
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server/index.js
+    healthCheckPath: /api/agent/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: NODE_ENV
+        value: production
+      - key: AGENT_API_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_OWNER_CHAT_ID
+        sync: false
+      - key: REVIEW_AUTO_DENY_HOURS
+        value: "24"

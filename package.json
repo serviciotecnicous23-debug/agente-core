@@ -1,0 +1,28 @@
+{
+  "name": "agente-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cerebro central del ecosistema de agentes de Luis. API independiente que coordina misiones, revisa acciones de riesgo y notifica al humano via Telegram.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.4",
+    "express": "^4.21.1",
+    "postgres": "^3.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}
