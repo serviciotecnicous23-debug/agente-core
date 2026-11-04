@@ -9,7 +9,7 @@ const PORT = Number(process.env.PORT || 5050);
 
 async function main(): Promise<void> {
   const app = express();
-  app.use(express.json({ limit: "10mb" }));
+  app.use(express.json({ limit: "10mb", inflate: false }));
 
   // Crear tablas si no existen (idempotente)
   if (process.env.DATABASE_URL) {
