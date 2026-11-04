@@ -10,7 +10,7 @@ services:
     healthCheckPath: /api/agent/health
     envVars:
       - key: NODE_VERSION
-        value: 20.19.0
+        value: "24"
       - key: NODE_ENV
         value: production
       - key: AGENT_API_KEY

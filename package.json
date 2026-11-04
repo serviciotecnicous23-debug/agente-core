@@ -5,7 +5,7 @@
   "description": "Cerebro central del ecosistema de agentes de Luis. API independiente que coordina misiones, revisa acciones de riesgo y notifica al humano via Telegram.",
   "type": "module",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.23.4"
   },
   "scripts": {
     "dev": "tsx watch server/index.ts",
@@ -14,14 +14,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "drizzle-orm": "^0.36.4",
-    "express": "^4.21.1",
+    "drizzle-orm": "^0.45.4",
+    "express": "^4.22.3",
     "postgres": "^3.4.5",
-    "zod": "^3.23.8"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.7.5",
+    "@types/express": "^4.17.25",
+    "@types/node": "^24.19.2",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3"
   }
